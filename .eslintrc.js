@@ -37,6 +37,7 @@ module.exports = {
         "ts": "never"
       }
     ],
+    'no-continue': 0,
     'no-underscore-dangle': [2, { "allow": ["__filename", "__dirname"] }],
     'import/prefer-default-export': 0,
   },

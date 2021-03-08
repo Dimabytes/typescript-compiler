@@ -64,7 +64,6 @@ const mergeCells = (leftCell: Cell, rightCell: Cell) => {
       leftCell.setValue(leftCell.getValue() - rightCell.getValue());
       break;
     default:
-      throw new Error(`Unknown action ${leftCell.getAction()}`);
   }
   leftCell.setAction(rightCell.getAction());
 };
@@ -92,11 +91,17 @@ export const merge = (listToMerge: Cell[]): number => {
 };
 
 export const isActionValid = (ch: string): boolean => {
-  return ch === '*' || ch === '/' || ch === '+' || ch === '-' || ch === '^';
+  const actions = ['*', '/', '+', '-', '^'];
+  return actions.includes(ch);
 };
 
-export const isStillCollecting = (item: string, ch: string, to: string): boolean => {
-  const stopCollecting = to === END_ARG || to === ' ' ? END_ARG : to;
+export const isStillCollecting = (
+  item: string,
+  ch: string,
+  to: string,
+  defaultTo: string
+): boolean => {
+  const stopCollecting = to === END_ARG || to === defaultTo ? END_ARG : to;
   return (
     (item.length === 0 && (ch === '-' || ch === END_ARG)) ||
     !(isActionValid(ch) || ch === START_ARG || ch === stopCollecting)
