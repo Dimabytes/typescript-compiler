@@ -1,5 +1,5 @@
 {
-  "name": "webpack-ts",
+  "name": "typescript-compiler",
   "version": "1.0.0",
   "main": "index.js",
   "author": "dimabytes",
