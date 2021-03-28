@@ -1,20 +1,25 @@
+/* eslint-disable */
+import { ParsingScript } from 'ParsingScript';
 import { Cell, isStillCollecting, isActionValid, merge } from './cell';
 import { END_ARG, START_ARG } from './consts';
 
 // eslint-disable-next-line no-use-before-define
-type ParserFunction = (instance: ExpressionCalculator) => number;
+type ParserFunction = (script: ParsingScript) => number;
 
 const parserFunctions: Record<string, ParserFunction> = {
-  sin: (instance) => {
-    const arg = instance.loadAndCalculate(END_ARG);
+  sin: (script) => {
+    // eslint-disable-next-line no-use-before-define
+    const arg = loadAndCalculate(script, END_ARG);
     return Math.sin(arg);
   },
   PI: () => {
     return Math.PI;
   },
-  pow: (instance) => {
-    const arg1 = instance.loadAndCalculate(',');
-    const arg2 = instance.loadAndCalculate(END_ARG);
+  pow: (script) => {
+    // eslint-disable-next-line no-use-before-define
+    const arg1 = loadAndCalculate(script, ',');
+    // eslint-disable-next-line no-use-before-define
+    const arg2 = loadAndCalculate(script, END_ARG);
     return arg1 ** arg2;
   },
 };
@@ -27,81 +32,72 @@ const stringToNumber: (item: string) => ParserFunction = (item) => () => {
   return number;
 };
 
-export class ExpressionCalculator {
-  from: number;
-
-  data: string;
-
-  defaultTo: string;
-
-  constructor(data: string, defaultTo = '\0') {
-    this.data = data;
-    this.from = 0;
-    this.defaultTo = defaultTo;
+const getParserFunction = (script: ParsingScript, item: string, ch: string): ParserFunction => {
+  if (item.length === 0 && ch === START_ARG) {
+    // eslint-disable-next-line no-use-before-define
+    return () => loadAndCalculate(script, END_ARG);
   }
 
-  updateAction(item: string, ch: string, to: string): string {
-    if (this.from >= item.length || item[this.from] === END_ARG || item[this.from] === to) {
-      return END_ARG;
-    }
+  if (parserFunctions[item] !== undefined) {
+    return parserFunctions[item];
+  }
+  return stringToNumber(item);
+};
 
-    let index = this.from;
-    let res = ch;
-    while (!isActionValid(res) && index < item.length) {
-      // смотрим на следующий символ в строке,
-      // пока не найдем допустимое действие
-      res = item[index];
-      index += 1;
-    }
-    if (isActionValid(res)) {
-      this.from = index;
-    } else if (index > this.from) {
-      this.from = index - 1;
-    }
-    return res;
+const updateAction = (script: ParsingScript, ch: string, to: string): string => {
+  if (
+    script.from >= script.data.length ||
+    script.data[script.from] === END_ARG ||
+    script.data[script.from] === to
+  ) {
+    return END_ARG;
   }
 
-  getParserFunction(data: string, item: string, ch: string): ParserFunction {
-    if (item.length === 0 && ch === START_ARG) {
-      return () => this.loadAndCalculate(END_ARG);
-    }
-
-    if (parserFunctions[item] !== undefined) {
-      return parserFunctions[item];
-    }
-    return stringToNumber(item);
+  let index = script.from;
+  let res = ch;
+  while (!isActionValid(res) && index < script.data.length) {
+    // смотрим на следующий символ в строке,
+    // пока не найдем допустимое действие
+    res = script.data[index];
+    index += 1;
   }
+  if (isActionValid(res)) {
+    script.from = index;
+  } else if (index > script.from) {
+    script.from = index - 1;
+  }
+  return res;
+};
 
-  loadAndCalculate(to = this.defaultTo): number {
-    const listToMerge: Cell[] = [];
-    let item = '';
+export const loadAndCalculate = (script: ParsingScript, to: string): number => {
+  const listToMerge: Cell[] = [];
+  let item = '';
 
-    do {
-      const ch = this.data[this.from];
-      this.from += 1;
+  do {
+    const ch = script.data[script.from];
+    script.from += 1;
 
-      if (isStillCollecting(item, ch, to, this.defaultTo)) {
-        item += ch;
-        if (this.from < this.data.length && this.data[this.from] !== to) {
-          continue;
-        }
+    if (isStillCollecting(item, ch, to, '')) {
+      item += ch;
+      if (script.from < script.data.length && script.data[script.from] !== to) {
+        continue;
       }
-      const fn = this.getParserFunction(this.data, item, ch);
-
-      const value = fn(this);
-
-      const action = isActionValid(ch) ? ch : this.updateAction(this.data, ch, to);
-      listToMerge.push(new Cell(value, action));
-      item = '';
-    } while (this.from < this.data.length && this.data[this.from] !== to);
-
-    if (
-      this.from < this.data.length &&
-      (this.data[this.from] === END_ARG || this.data[this.from] === to)
-    ) {
-      this.from += 1;
     }
+    const fn = getParserFunction(script, item, ch);
 
-    return merge(listToMerge);
+    const value = fn(script);
+
+    const action = isActionValid(ch) ? ch : updateAction(script, ch, to);
+    listToMerge.push(new Cell(value, action));
+    item = '';
+  } while (script.from < script.data.length && script.data[script.from] !== to);
+
+  if (
+    script.from < script.data.length &&
+    (script.data[script.from] === END_ARG || script.data[script.from] === to)
+  ) {
+    script.from += 1;
   }
-}
+
+  return merge(listToMerge);
+};
