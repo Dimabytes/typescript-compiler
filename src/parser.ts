@@ -1,48 +1,7 @@
-/* eslint-disable */
 import { ParsingScript } from 'ParsingScript';
+import { getParserFunction } from './parserFunctions';
 import { Cell, isStillCollecting, isActionValid, merge } from './cell';
-import { END_ARG, START_ARG } from './consts';
-
-// eslint-disable-next-line no-use-before-define
-type ParserFunction = (script: ParsingScript) => number;
-
-const parserFunctions: Record<string, ParserFunction> = {
-  sin: (script) => {
-    // eslint-disable-next-line no-use-before-define
-    const arg = loadAndCalculate(script, END_ARG);
-    return Math.sin(arg);
-  },
-  PI: () => {
-    return Math.PI;
-  },
-  pow: (script) => {
-    // eslint-disable-next-line no-use-before-define
-    const arg1 = loadAndCalculate(script, ',');
-    // eslint-disable-next-line no-use-before-define
-    const arg2 = loadAndCalculate(script, END_ARG);
-    return arg1 ** arg2;
-  },
-};
-
-const stringToNumber: (item: string) => ParserFunction = (item) => () => {
-  const number = +item;
-  if (Number.isNaN(number)) {
-    throw new Error(`Error parsing number from string ${item}`);
-  }
-  return number;
-};
-
-const getParserFunction = (script: ParsingScript, item: string, ch: string): ParserFunction => {
-  if (item.length === 0 && ch === START_ARG) {
-    // eslint-disable-next-line no-use-before-define
-    return () => loadAndCalculate(script, END_ARG);
-  }
-
-  if (parserFunctions[item] !== undefined) {
-    return parserFunctions[item];
-  }
-  return stringToNumber(item);
-};
+import { END_ARG } from './consts';
 
 const updateAction = (script: ParsingScript, ch: string, to: string): string => {
   if (

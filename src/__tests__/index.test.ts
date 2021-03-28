@@ -39,7 +39,7 @@ const getFixturePath = (filename: string) => path.join(__dirname, '..', '__fixtu
 
 describe('test', () => {
   it('calculate', () => {
-    const data = '2+6';
+    const data = 'pow(2,5)';
     const res = Interpreter.process(data);
 
     expect(res).toBe(8);
