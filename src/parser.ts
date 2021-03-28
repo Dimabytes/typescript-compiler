@@ -1,9 +1,25 @@
 import { Cell, isStillCollecting, isActionValid, merge } from './cell';
 import { END_ARG, START_ARG } from './consts';
 
-type ParserFunction = (data: string, item: string) => number;
+// eslint-disable-next-line no-use-before-define
+type ParserFunction = (instance: ExpressionCalculator) => number;
 
-const stringToNumber: ParserFunction = (data, item) => {
+const parserFunctions: Record<string, ParserFunction> = {
+  sin: (instance) => {
+    const arg = instance.loadAndCalculate(END_ARG);
+    return Math.sin(arg);
+  },
+  PI: () => {
+    return Math.PI;
+  },
+  pow: (instance) => {
+    const arg1 = instance.loadAndCalculate(',');
+    const arg2 = instance.loadAndCalculate(END_ARG);
+    return arg1 ** arg2;
+  },
+};
+
+const stringToNumber: (item: string) => ParserFunction = (item) => () => {
   const number = +item;
   if (Number.isNaN(number)) {
     throw new Error(`Error parsing number from string ${item}`);
@@ -11,15 +27,25 @@ const stringToNumber: ParserFunction = (data, item) => {
   return number;
 };
 
-export const calculateExpression = (expression: string, defaultTo = '\0'): number => {
-  let from = 0;
+export class ExpressionCalculator {
+  from: number;
 
-  const updateAction = (item: string, ch: string, to: string) => {
-    if (from >= item.length || item[from] === END_ARG || item[from] === to) {
+  data: string;
+
+  defaultTo: string;
+
+  constructor(data: string, defaultTo = '\0') {
+    this.data = data;
+    this.from = 0;
+    this.defaultTo = defaultTo;
+  }
+
+  updateAction(item: string, ch: string, to: string): string {
+    if (this.from >= item.length || item[this.from] === END_ARG || item[this.from] === to) {
       return END_ARG;
     }
 
-    let index = from;
+    let index = this.from;
     let res = ch;
     while (!isActionValid(res) && index < item.length) {
       // смотрим на следующий символ в строке,
@@ -28,50 +54,54 @@ export const calculateExpression = (expression: string, defaultTo = '\0'): numbe
       index += 1;
     }
     if (isActionValid(res)) {
-      from = index;
-    } else if (index > from) {
-      from = index - 1;
+      this.from = index;
+    } else if (index > this.from) {
+      this.from = index - 1;
     }
     return res;
-  };
+  }
 
-  const getParserFunction = (data: string, item: string, ch: string): ParserFunction => {
+  getParserFunction(data: string, item: string, ch: string): ParserFunction {
     if (item.length === 0 && ch === START_ARG) {
-      // eslint-disable-next-line no-use-before-define
-      return () => loadAndCalculate(data, END_ARG);
+      return () => this.loadAndCalculate(END_ARG);
     }
-    return stringToNumber;
-  };
 
-  const loadAndCalculate = (data: string, to: string): number => {
+    if (parserFunctions[item] !== undefined) {
+      return parserFunctions[item];
+    }
+    return stringToNumber(item);
+  }
+
+  loadAndCalculate(to = this.defaultTo): number {
     const listToMerge: Cell[] = [];
     let item = '';
 
     do {
-      const ch = data[from];
-      from += 1;
+      const ch = this.data[this.from];
+      this.from += 1;
 
-      if (isStillCollecting(item, ch, to, defaultTo)) {
+      if (isStillCollecting(item, ch, to, this.defaultTo)) {
         item += ch;
-        if (from < data.length && data[from] !== to) {
+        if (this.from < this.data.length && this.data[this.from] !== to) {
           continue;
         }
       }
-      const fn = getParserFunction(data, item, ch);
+      const fn = this.getParserFunction(this.data, item, ch);
 
-      const value = fn(data, item);
+      const value = fn(this);
 
-      const action = isActionValid(ch) ? ch : updateAction(data, ch, to);
+      const action = isActionValid(ch) ? ch : this.updateAction(this.data, ch, to);
       listToMerge.push(new Cell(value, action));
       item = '';
-    } while (from < data.length && data[from] !== to);
+    } while (this.from < this.data.length && this.data[this.from] !== to);
 
-    if (from < data.length && (data[from] === END_ARG || data[from] === to)) {
-      from += 1;
+    if (
+      this.from < this.data.length &&
+      (this.data[this.from] === END_ARG || this.data[this.from] === to)
+    ) {
+      this.from += 1;
     }
 
     return merge(listToMerge);
-  };
-
-  return loadAndCalculate(expression, defaultTo);
-};
+  }
+}
