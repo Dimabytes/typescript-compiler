@@ -38,7 +38,7 @@ export const loadAndCalculate = (script: ParsingScript, to: string): number => {
 
     if (isStillCollecting(item, ch, to, '')) {
       item += ch;
-      if (script.from < script.data.length && script.data[script.from] !== to) {
+      if (script.from < script.data.length && !to.includes(script.data[script.from])) {
         continue;
       }
     }
@@ -49,11 +49,11 @@ export const loadAndCalculate = (script: ParsingScript, to: string): number => {
     const action = isActionValid(ch) ? ch : updateAction(script, ch, to);
     listToMerge.push(new Cell(value, action));
     item = '';
-  } while (script.from < script.data.length && script.data[script.from] !== to);
+  } while (script.from < script.data.length && !to.includes(script.data[script.from]));
 
   if (
     script.from < script.data.length &&
-    (script.data[script.from] === END_ARG || script.data[script.from] === to)
+    (script.data[script.from] === END_ARG || to.includes(script.data[script.from]))
   ) {
     script.from += 1;
   }

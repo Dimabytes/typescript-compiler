@@ -1,8 +1,8 @@
 import path from 'path';
+import { calculateFileExpression } from '../index';
 import { process } from '../Interpreter';
 
 const getFixturePath = (filename: string) => path.join(__dirname, '..', '__fixtures__', filename);
-// const readFile = (filename: string) => fs.readFileSync(getFixturePath(filename), 'utf-8');
 
 describe('calculateExpression', () => {
   test.each([
@@ -15,20 +15,42 @@ describe('calculateExpression', () => {
     expect(process(expression)).toBe(expected);
   });
 
-  it('calculate sin', async () => {
+  it('calculate expression from file', async () => {
+    const res = await calculateFileExpression(getFixturePath('expressionExample.txt'));
+    expect(res).toBe(900);
+  });
+});
+
+describe('functions with arguments', () => {
+  it('sin and PI fn', async () => {
     expect(process('sin(PI/2)')).toBe(1);
   });
 
-  it('calculate pow', async () => {
+  it('pow fn', async () => {
     expect(process('pow(5, 2)')).toBe(25);
   });
 
-  // it('calculate expression from file', async () => {
-  //   const res = await calculateFileExpression(getFixturePath('expressionExample.txt'));
-  //   expect(res).toBe(900);
-  // });
+  it('log fn', async () => {
+    console.log = jest.fn();
+    process('log(123)');
+    expect(console.log).toHaveBeenCalledWith(123);
+  });
+});
 
-  it('calculate if statement from file', async () => {
-    expect(process('if(100) {5} else {10}')).toBe(5);
+describe('if statement', () => {
+  it('statement from string', async () => {
+    expect(process('if(0) {5} else {10}')).toBe(10);
+  });
+
+  it('false if statement from file', async () => {
+    console.log = jest.fn();
+    await calculateFileExpression(getFixturePath('ifFalseExample.txt'));
+    expect(console.log).toHaveBeenCalledWith(10);
+  });
+
+  it('true if statement from file', async () => {
+    console.log = jest.fn();
+    await calculateFileExpression(getFixturePath('ifTrueExample.txt'));
+    expect(console.log).toHaveBeenCalledWith(5);
   });
 });

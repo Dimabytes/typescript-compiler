@@ -1,8 +1,8 @@
 import fs from 'fs/promises';
-import { ExpressionCalculator } from './parser';
+import { process } from './Interpreter';
 
 export const calculateFileExpression = async (filepath: string): Promise<number> => {
   const expression = await fs.readFile(filepath, 'utf-8');
-  const calculator = new ExpressionCalculator(expression);
-  return calculator.loadAndCalculate();
+  const res = process(expression);
+  return res;
 };

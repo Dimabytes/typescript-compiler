@@ -1,3 +1,4 @@
+import { processIf } from './Interpreter';
 import { END_ARG, START_ARG } from './consts';
 import { ParsingScript } from './ParsingScript';
 import { loadAndCalculate } from './parser';
@@ -16,6 +17,14 @@ const parserFunctions: Record<string, ParserFunction> = {
     const arg1 = loadAndCalculate(script, ',');
     const arg2 = loadAndCalculate(script, END_ARG);
     return arg1 ** arg2;
+  },
+  if: (script) => {
+    return processIf(script);
+  },
+  log: (script) => {
+    const arg = loadAndCalculate(script, END_ARG);
+    console.log(arg);
+    return 0;
   },
 };
 
