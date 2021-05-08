@@ -1,3 +1,5 @@
+import { MemoryObject } from './Variable';
+
 export const END_ARG = ')';
 export const START_ARG = '(';
 export const END_GROUP = '}';
@@ -11,9 +13,9 @@ export const TOKEN_SEPARATION = '<>=+-*/%&|^,!()[]{}\t\n; ';
 export const END_PARSING_STR = SPACE + END_GROUP + END_STATEMENT + END_STRING;
 
 interface GlobalVariables {
-  setValue: (item: any, value: any) => void;
-  getValue: (item: any) => any;
-  variables: Record<string, any>;
+  setValue: (item: string, value: number) => void;
+  getValue: (item: string) => number;
+  variables: Record<string, number>;
 }
 
 export const globalVariables: GlobalVariables = {

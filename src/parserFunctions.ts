@@ -1,6 +1,6 @@
 import { MemoryObject, MemoryVariable, MemoryNumber } from './Variable';
 import { processIf, processWhile } from './Interpreter';
-import { END_ARG, START_ARG, END_PARSING_STR } from './consts';
+import { END_ARG, START_ARG } from './consts';
 import { ParsingScript } from './ParsingScript';
 import { loadAndCalculate } from './parser';
 
