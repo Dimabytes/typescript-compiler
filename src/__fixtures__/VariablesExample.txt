@@ -1,5 +1,3 @@
-a = 0;
-while(less(a, 16)){
-    log(a);
-    a=a+1;
-}
+a = 5;
+b = 10;
+log(a + b)

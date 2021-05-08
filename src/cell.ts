@@ -70,7 +70,6 @@ const mergeCells = (leftCell: Cell, rightCell: Cell) => {
 
 export const merge = (listToMerge: Cell[]): MemoryObject => {
   let index = 1;
-
   const iter = (currentCell: Cell, mergeOneOnly: boolean) => {
     while (index < listToMerge.length) {
       const next = listToMerge[index];

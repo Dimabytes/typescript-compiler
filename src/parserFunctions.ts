@@ -1,5 +1,5 @@
 import { MemoryObject, MemoryVariable, MemoryNumber } from './Variable';
-import { processIf, processWhile } from './Interpreter';
+import { processFor, processIf, processWhile } from './Interpreter';
 import { END_ARG, START_ARG } from './consts';
 import { ParsingScript } from './ParsingScript';
 import { loadAndCalculate } from './parser';
@@ -32,6 +32,9 @@ const parserFunctions: Record<string, ParserFunction> = {
   },
   while: (script) => {
     return new MemoryNumber(processWhile(script));
+  },
+  for: (script) => {
+    return new MemoryNumber(processFor(script));
   },
   log: (script) => {
     const arg = loadAndCalculate(script, END_ARG);

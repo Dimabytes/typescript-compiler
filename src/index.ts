@@ -6,7 +6,3 @@ export const calculateFileExpression = async (filepath: string): Promise<number>
   const res = process(expression);
   return res;
 };
-
-calculateFileExpression('src/__fixtures__/VariablesExample.txt').then((res) => {
-  console.log(res);
-});

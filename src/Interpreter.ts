@@ -110,3 +110,36 @@ export const processWhile = (script: ParsingScript): number => {
 
   return 0;
 };
+
+const getBodyBefore = (script: ParsingScript, end: string) => {
+  const elIndex = script.data.slice(script.from).indexOf(end);
+  const res = script.data.slice(script.from, script.from + elIndex);
+  script.from = elIndex + 1;
+  return res;
+};
+
+export const processFor = (script: ParsingScript): number => {
+  const forString = getBodyBefore(script, ') ');
+  const forTokens = forString.split(END_STATEMENT);
+
+  const initScript = new ParsingScript(forTokens[0].trim());
+  const condScript = new ParsingScript(forTokens[1].trim());
+  const loopScript = new ParsingScript(forTokens[2].trim());
+  loadAndCalculate(initScript, END_ARG);
+  const startForCondition = script.from;
+  let stillValid = true;
+
+  while (stillValid) {
+    condScript.from = 0;
+    loopScript.from = 0;
+    const condResult = loadAndCalculate(condScript, END_ARG);
+    stillValid = condResult.getValue() !== 0;
+    if (!stillValid) {
+      break;
+    }
+    script.from = startForCondition;
+    processBlock(script);
+    loadAndCalculate(loopScript, END_ARG);
+  }
+  return 0;
+};

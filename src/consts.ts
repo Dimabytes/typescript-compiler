@@ -1,5 +1,3 @@
-import { MemoryObject } from './Variable';
-
 export const END_ARG = ')';
 export const START_ARG = '(';
 export const END_GROUP = '}';

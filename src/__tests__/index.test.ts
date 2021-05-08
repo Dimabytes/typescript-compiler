@@ -55,8 +55,20 @@ describe('if statement', () => {
   });
 });
 
+it('while test', async () => {
+  console.log = jest.fn();
+  await calculateFileExpression(getFixturePath('WhileExample.txt'));
+  expect(console.log).toHaveBeenCalledTimes(15);
+});
+
 it('variable test', async () => {
   console.log = jest.fn();
   await calculateFileExpression(getFixturePath('VariablesExample.txt'));
-  expect(console.log).toHaveBeenCalledTimes(16);
+  expect(console.log).toHaveBeenCalledWith(15);
+});
+
+it('for test', async () => {
+  console.log = jest.fn();
+  await calculateFileExpression(getFixturePath('ForExample.txt'));
+  expect(console.log).toHaveBeenCalledTimes(5);
 });
