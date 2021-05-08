@@ -9,3 +9,19 @@ export const ELSE = 'else';
 export const TOKEN_SEPARATION = '<>=+-*/%&|^,!()[]{}\t\n; ';
 
 export const END_PARSING_STR = SPACE + END_GROUP + END_STATEMENT + END_STRING;
+
+interface GlobalVariables {
+  setValue: (item: any, value: any) => void;
+  getValue: (item: any) => any;
+  variables: Record<string, any>;
+}
+
+export const globalVariables: GlobalVariables = {
+  setValue: (item, value) => {
+    globalVariables.variables[item.replace(/ /g, '')] = value;
+  },
+  getValue: (item) => {
+    return globalVariables.variables[item.replace(/ /g, '')];
+  },
+  variables: {},
+};

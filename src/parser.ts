@@ -1,12 +1,13 @@
 import { ParsingScript } from 'ParsingScript';
+import { MemoryObject } from 'Variable';
 import { getParserFunction } from './parserFunctions';
 import { Cell, isStillCollecting, isActionValid, merge } from './cell';
-import { END_ARG } from './consts';
+import { END_ARG, END_PARSING_STR } from './consts';
 
 const updateAction = (script: ParsingScript, ch: string, to: string): string => {
   if (
     script.from >= script.data.length ||
-    script.data[script.from] === END_ARG ||
+    END_PARSING_STR.includes(script.getCurrentChar()) ||
     script.data[script.from] === to
   ) {
     return END_ARG;
@@ -28,17 +29,16 @@ const updateAction = (script: ParsingScript, ch: string, to: string): string => 
   return res;
 };
 
-export const loadAndCalculate = (script: ParsingScript, to: string): number => {
+export const loadAndCalculate = (script: ParsingScript, to: string): MemoryObject => {
   const listToMerge: Cell[] = [];
   let item = '';
 
   do {
-    const ch = script.data[script.from];
-    script.from += 1;
-
+    const ch = script.getCurrentChar();
+    script.forward();
     if (isStillCollecting(item, ch, to, '')) {
       item += ch;
-      if (script.from < script.data.length && !to.includes(script.data[script.from])) {
+      if (script.from < script.data.length && !to.includes(script.getCurrentChar())) {
         continue;
       }
     }
@@ -49,13 +49,12 @@ export const loadAndCalculate = (script: ParsingScript, to: string): number => {
     const action = isActionValid(ch) ? ch : updateAction(script, ch, to);
     listToMerge.push(new Cell(value, action));
     item = '';
-  } while (script.from < script.data.length && !to.includes(script.data[script.from]));
-
+  } while (script.from < script.data.length && !to.includes(script.getCurrentChar()));
   if (
     script.from < script.data.length &&
-    (script.data[script.from] === END_ARG || to.includes(script.data[script.from]))
+    (script.getCurrentChar() === END_ARG || to.includes(script.getCurrentChar()))
   ) {
-    script.from += 1;
+    script.forward();
   }
 
   return merge(listToMerge);

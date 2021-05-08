@@ -8,7 +8,7 @@ export const process = (scriptData: string): number => {
   const script = new ParsingScript(scriptData);
 
   while (script.stillValid()) {
-    result = loadAndCalculate(script, END_STATEMENT);
+    result = loadAndCalculate(script, END_STATEMENT).getValue();
 
     goToNextStatement(script);
   }
@@ -28,7 +28,7 @@ const processBlock = (script: ParsingScript): number => {
     if (!script.stillValid()) {
       throw new Error("Couldn't process block");
     }
-    result = loadAndCalculate(script, END_PARSING_STR); // ХЗ
+    result = loadAndCalculate(script, END_PARSING_STR).getValue(); // ХЗ
   }
   if (result === null) {
     throw new Error("Couldn't process block 2");
@@ -74,7 +74,7 @@ const skipRestBlocks = (script: ParsingScript) => {
 };
 
 export const processIf = (script: ParsingScript): number => {
-  const statementResult = loadAndCalculate(script, END_ARG);
+  const statementResult = loadAndCalculate(script, END_ARG).getValue();
   const isTrue = !!statementResult;
 
   if (isTrue) {
@@ -90,5 +90,23 @@ export const processIf = (script: ParsingScript): number => {
     script.from = nextData.from + 1;
     return processBlock(script);
   }
+  return 0;
+};
+
+export const processWhile = (script: ParsingScript): number => {
+  const conditionStart = script.from;
+  let stillValid = true;
+  while (stillValid) {
+    script.from = conditionStart;
+    const res = loadAndCalculate(script, END_ARG).getValue();
+    stillValid = !!res;
+    if (!stillValid) {
+      break;
+    }
+
+    processBlock(script);
+  }
+  skipBlock(script);
+
   return 0;
 };

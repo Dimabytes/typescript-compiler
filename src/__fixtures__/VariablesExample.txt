@@ -1,0 +1,5 @@
+a = 0;
+while(less(a, 16)){
+    log(a);
+    a=a+1;
+}

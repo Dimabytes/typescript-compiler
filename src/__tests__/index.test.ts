@@ -54,3 +54,9 @@ describe('if statement', () => {
     expect(console.log).toHaveBeenCalledWith(5);
   });
 });
+
+it('variable test', async () => {
+  console.log = jest.fn();
+  await calculateFileExpression(getFixturePath('VariablesExample.txt'));
+  expect(console.log).toHaveBeenCalledTimes(16);
+});

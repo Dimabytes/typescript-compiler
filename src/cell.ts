@@ -1,20 +1,17 @@
+import { MemoryNumber, MemoryObject } from './Variable';
 import { START_ARG, END_ARG } from './consts';
 
 export class Cell {
-  private value: number;
+  value: MemoryObject;
 
-  private action: string;
+  action: string;
 
-  constructor(value: number, action: string) {
+  constructor(value: MemoryObject, action: string) {
     this.value = value;
     this.action = action;
   }
 
-  getValue(): number {
-    return this.value;
-  }
-
-  setValue(value: number): void {
+  setValue(value: MemoryObject): void {
     this.value = value;
   }
 
@@ -49,26 +46,29 @@ const canMergeCells = (leftCell: Cell, rightCell: Cell) => {
 const mergeCells = (leftCell: Cell, rightCell: Cell) => {
   switch (leftCell.getAction()) {
     case '^':
-      leftCell.setValue(leftCell.getValue() ** rightCell.getValue());
+      leftCell.setValue(new MemoryNumber(leftCell.value.getValue() ** rightCell.value.getValue()));
       break;
     case '*':
-      leftCell.setValue(leftCell.getValue() * rightCell.getValue());
+      leftCell.setValue(new MemoryNumber(leftCell.value.getValue() * rightCell.value.getValue()));
       break;
     case '/':
-      leftCell.setValue(leftCell.getValue() / rightCell.getValue());
+      leftCell.setValue(new MemoryNumber(leftCell.value.getValue() / rightCell.value.getValue()));
       break;
     case '+':
-      leftCell.setValue(leftCell.getValue() + rightCell.getValue());
+      leftCell.setValue(new MemoryNumber(leftCell.value.getValue() + rightCell.value.getValue()));
       break;
     case '-':
-      leftCell.setValue(leftCell.getValue() - rightCell.getValue());
+      leftCell.setValue(new MemoryNumber(leftCell.value.getValue() - rightCell.value.getValue()));
+      break;
+    case '=':
+      leftCell.value.setValue(rightCell.value.getValue());
       break;
     default:
   }
   leftCell.setAction(rightCell.getAction());
 };
 
-export const merge = (listToMerge: Cell[]): number => {
+export const merge = (listToMerge: Cell[]): MemoryObject => {
   let index = 1;
 
   const iter = (currentCell: Cell, mergeOneOnly: boolean) => {
@@ -82,16 +82,16 @@ export const merge = (listToMerge: Cell[]): number => {
       mergeCells(currentCell, next);
 
       if (mergeOneOnly) {
-        return currentCell.getValue();
+        return currentCell.value;
       }
     }
-    return currentCell.getValue();
+    return currentCell.value;
   };
   return iter(listToMerge[0], false);
 };
 
 export const isActionValid = (ch: string): boolean => {
-  const actions = ['*', '/', '+', '-', '^'];
+  const actions = ['*', '/', '+', '-', '^', '='];
   return actions.includes(ch);
 };
 
